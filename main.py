@@ -109,5 +109,5 @@ def rotor_caesar(key_id, len_of_keys, shift):
 
 
 print('Введите текст для машины:')
-text = input()
+text = 'а б В Г'
 summon_enigma_machine(text)
