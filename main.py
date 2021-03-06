@@ -1,37 +1,72 @@
+import os
+
+
 def summon_enigma_machine(initial_text=''):
     """
     Эта функция должна спрашивать параметры, для запуска "машины".
     В свою очередь машина состоит из нескольких функций.
     """
     # Тут я присвоил нужные типы обьектам
-    rewritten_text, output_text, set_of_keys, reforged_rotor_pos = '', '', '', {}
-    # Тут я вызвал потрошителя и получил от него "потроха" с набором символов
+    rewritten_text, output_text, set_of_keys = '', '', ''
+    # Тут скормил полученный текст потрошителю и получил от него очищеный текст и набор ключей (букв)
     rewritten_text, set_of_keys = text_ripper(initial_text)
-    # Тут я создаю "обратный" словарь. Внимание, если ключ в оригинальном словаре не интуется - программа остановится
-    backward_set_of_keys = {}
+    # Тут я создаю "обратный" словарь. ВНИМАНИЕ!, если ключ в оригинальном словаре не интуется - программа остановится.
+    backward_set_of_keys, rotor_pos = {}, {}
+    # Название говорит само за себя. Добавлен, для легкого исключение знаков препинания из словоря.
+    cursed_words = [" ", ",", "."]
     for i in set_of_keys:
-        if i != ' ':  # тут пришлось добавить исколючение, т к выполнение останавливалось
+        if i not in cursed_words:
             backward_set_of_keys[int(set_of_keys[i])] = i
-    print(backward_set_of_keys)
-    print('Укажите параметры для роторов следующим образом: '
-          'Название ротора(7 символов. Далее, без разделителей)позиция ротора. Повторить *количество роторов* раз.'
-          'На данный момент существует только 1 ротор: rotor_a')
-    rotor_pos = input()
-    for i in range(0, int(len(rotor_pos) / 10)):
-        print(rotor_pos[i * 10: i * 10 + 10])
-        reforged_rotor_pos[rotor_pos[i * 10: i * 10 + 7]] = rotor_pos[i * 10 + 7: i * 10 + 10]
-        print(reforged_rotor_pos)
+    rotor = ''
+    while rotor != 0:  # всегда не =
+        print('Укажите параметры для роторов следующим образом:\nВведите назнание ротора (без расширения .txt). '
+              'Для остановки введите пробел.')
+        rotor = str(input())
+        if rotor != ' ':
+            print('Введите позицию для ротора:')
+            pos = int(input())
+            if rotor + '_0' in rotor_pos:
+                i = 0
+                while rotor + '_' + str(i) in rotor_pos:
+                    i += 1
+                rotor_pos[rotor + '_' + str(i)] = pos
+            else:
+                if os.path.exists(rotor + '.txt'):
+                    rotor_pos[rotor + '_0'] = pos
+                else:
+                    print('Такого ротора - нет!')
+        else:
+            if rotor_pos != {}:
+                break
+            else:
+                print('Должен быть хотя бы 1 ротор!')
     for i in range(0, int(len(rewritten_text) / 3)):
         if rewritten_text[i * 3: i * 3 + 3] != '   ':  # Тут я гарантирую себе, что скормлю роторам цифры, а не пробелы
+            # на этом моменте мы получили заветное число, и готовы скормить его роторам
             key_id = int(rewritten_text[i * 3: i * 3 + 3])
             # Тут я вызываю роторы, запихиваю в них кусок текста, возвращаю результат и превращаю его из чисел в буквы
-            if key_id in backward_set_of_keys:
-                output_text += backward_set_of_keys[key_id]
-            else:
-                print('error: ', key_id)
+            rotor_stage(key_id, rotor_pos, len(backward_set_of_keys))
+            output_text += str(key_id) + ' '
         else:
             output_text += ' '  # Три пробела были нужны для кратности
+    print('Результат шифрования:')
     print(output_text)
+
+
+def rotor_stage(id, rotor_pos, len):
+    for i in rotor_pos:
+        shift = int(rotor_pos[i])
+        while shift > len:
+            shift -= len
+        id += shift
+        while id > len:
+            id -= len
+        i = i.split('_')
+        with open(i[0] + '.txt') as file:
+            lines = file.readlines()
+        lines = (''.join(lines[id - 1: id])).split()
+        id = int(lines[1])
+    return id
 
 
 def text_ripper(text_sample, set_of_keys=''):
@@ -58,56 +93,6 @@ def text_ripper(text_sample, set_of_keys=''):
     return return_text, set_of_keys
 
 
-def rotor_stage(id, set_of_key, poz):
-    len_of_keys = len(set_of_key) - 1
-    rotor_list = {'rotor_a': rotor_a(id, poz['rotor_a'], len_of_keys)}
-    for rotor in poz:
-        if rotor in rotor_list:
-            key_id = rotor_list[rotor]
-            if int(poz[rotor]) > len_of_keys:
-                poz[rotor] > int(poz[rotor]) + 1
-
-    return key_id, poz
-
-# Здесь находятся сами роторы
-# При добавлении ротора обязательно нужно добавить его в контейнер роторов
-def rotor_a(key_id, shift, len_of_keys, mode='forward'):
-    if 1 == (key_id % 4):
-        if mode == 'forward':
-            key_id = key_id - 1 + shift
-        else:
-            key_id = key_id + 2 + shift
-    elif 2 == (key_id % 4):
-        if mode == 'forward':
-            key_id = key_id + 1 + shift
-        else:
-            key_id = key_id - 2 + shift
-    elif 3 == (key_id % 4):
-        if mode == 'forward':
-            key_id = key_id - 2 + shift
-        else:
-            key_id = key_id - 1 + shift
-    elif 0 == (key_id % 4):
-        if mode == 'forward':
-            key_id = key_id + 2 + shift
-        else:
-            key_id = key_id + 1 + shift
-    if key_id > len_of_keys - 1:
-        key_id -= len_of_keys
-    elif key_id < 1:
-        key_id += len_of_keys
-    return key_id
-
-
-def rotor_caesar(key_id, len_of_keys, shift):
-    key_id += shift
-    if key_id > len_of_keys - 1:
-        key_id -= len_of_keys
-    elif key_id < 1:
-        key_id += len_of_keys
-    return key_id
-
-
 print('Введите текст для машины:')
-text = 'а б В Г'
+text = str(input())
 summon_enigma_machine(text)
