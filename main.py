@@ -50,12 +50,6 @@ def summon_enigma_machine(mode = 10, initial_text = '', initial_rotor = ''):
             else:
                 print('Должен быть хотя бы 1 ротор!')
 
-    print(backward_set_of_keys)
-    print(temp_rotor_pos)
-    print(len(temp_rotor_pos))
-    print(range(0, len(temp_rotor_pos), 1))
-    print(len(backward_set_of_keys))
-
     # размечаем место для массива
     for rotor in range(len(temp_rotor_pos)):  # кол-во роторов
         a1 = []
@@ -83,11 +77,6 @@ def summon_enigma_machine(mode = 10, initial_text = '', initial_rotor = ''):
 
         file.close()
 
-    print(rotor_pos)
-    print(len(rotor_pos))
-    print(rotor_pos[0][0][0][0], rotor_pos[0][0][0][1])
-    print(other_symbols)
-
     # Запуск основной части
     j = 0
     for i in range(0, int(len(rewritten_text) / 3)):
@@ -97,12 +86,10 @@ def summon_enigma_machine(mode = 10, initial_text = '', initial_rotor = ''):
 
             # Тут я вызываю роторы, запихиваю в них кусок текста, возвращаю результат и превращаю его из чисел в буквы
             output_text += backward_set_of_keys[rotor_stage(key_id, rotor_pos, len(backward_set_of_keys))]
-            print(output_text)
         else:
             if mode == 0:
                 output_text += other_symbols[j]  # Три пробела были нужны для кратности
                 j += 1
-                print(output_text)
     print('Результат шифрования:')
     print(output_text)
 
@@ -123,18 +110,15 @@ def rotor_stage(key_id, rotor_pos, leng=26):
             rotor_pos[i][1] -= leng
             if i < leng:
                 rotor_pos[i + 1][1] += 1
-    print(key_id)
 
     #  через роторы, до рефлектора
     for i in range(len(rotor_pos)):
         j = 0
         key_id += rotor_pos[i][1]
-        print(key_id)
         while key_id > leng:
             key_id -= leng
         while rotor_pos[i][0][j][0] != key_id:
             j += 1
-        print(rotor_pos[i][0][j])
         key_id = rotor_pos[i][0][j][1]
 
     # Рефлектор
@@ -144,16 +128,12 @@ def rotor_stage(key_id, rotor_pos, leng=26):
     for i in range(len(rotor_pos)):
         # отражаем i т. к. мы идем в обратную сторону
         i = len(rotor_pos)-1-i
-
         j = 0
-        print(key_id)
         while rotor_pos[i][0][j][1] != key_id:
             j += 1
-        print(i, ' ', rotor_pos[i][0][j])
         key_id = rotor_pos[i][0][j][0]
-        print(i, ' ', rotor_pos[(len(rotor_pos)-1-i)][1])
         key_id -= rotor_pos[i][1]
-        while key_id < 0:
+        while key_id <= 0:
             key_id += leng
     return key_id
 
