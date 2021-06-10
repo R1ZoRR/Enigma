@@ -15,7 +15,7 @@ def summon_enigma_machine(mode = 10, initial_text = '', initial_rotor = ''):
     backward_set_of_keys, temp_rotor_pos, rotor_pos = {}, [], []
 
     if initial_text == '':
-        print('Введите текст для ротора')
+        print('Введите текст для ротора:')
         initial_text = str(input())
 
     # Тут скормил полученный текст потрошителю и получил от него очищеный текст и набор ключей (букв)
@@ -37,7 +37,7 @@ def summon_enigma_machine(mode = 10, initial_text = '', initial_rotor = ''):
             while not pos.isdigit():
                 pos = input()
                 if pos.isdigit() == 0:
-                    print('ПОЗИЦИЯ РОТОРА ЭТО ЧИСЛО')
+                    print('Плохие данные для положения. Позиция это целое, неотрицательное число.')
             if os.path.exists(os.getcwd() + '/rotors/' + rotor + '.txt'):
                 temp_rotor_pos.append([])
                 temp_rotor_pos[i] = [rotor, int(pos)]
@@ -106,9 +106,9 @@ def rotor_stage(key_id, rotor_pos, leng=26):
     #  сдвиг и проверка положения ротора
     rotor_pos[0][1] += 1
     for i in range(len(rotor_pos)):
-        if rotor_pos[i][1] > leng:
+        while rotor_pos[i][1] > leng:
             rotor_pos[i][1] -= leng
-            if i < leng:
+            if i < (len(rotor_pos) - 1):
                 rotor_pos[i + 1][1] += 1
 
     #  через роторы, до рефлектора
